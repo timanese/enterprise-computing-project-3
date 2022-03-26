@@ -30,25 +30,26 @@ public class jdbcClientDriver {
 
   }
 
-  public void setConnection() throws SQLException {
-    System.out
-        .println("Output from SimpleJDBCProperties:   Using a client properties file to hold connection details.");
-    java.util.Date date = new java.util.Date();
-    System.out.println(date);
-    System.out.println();
-    // establish a connection to the dataSource - the database
-    connection = dataSource.getConnection();
-    System.out.println("Database connected");
-    DatabaseMetaData dbMetaData = connection.getMetaData();
-    System.out.println("JDBC Driver name " + dbMetaData.getDriverName());
-    System.out.println("JDBC Driver version " + dbMetaData.getDriverVersion());
-    System.out.println("Driver Major version "
-        + dbMetaData.getDriverMajorVersion());
-    System.out.println("Driver Minor version "
-        + dbMetaData.getDriverMinorVersion());
-    // Close the connection
-    // connection.close();
-  }
+  // public void setConnection() throws SQLException {
+  // System.out
+  // .println("Output from SimpleJDBCProperties: Using a client properties file to
+  // hold connection details.");
+  // java.util.Date date = new java.util.Date();
+  // System.out.println(date);
+  // System.out.println();
+  // // establish a connection to the dataSource - the database
+  // connection = dataSource.getConnection();
+  // System.out.println("Database connected");
+  // DatabaseMetaData dbMetaData = connection.getMetaData();
+  // System.out.println("JDBC Driver name " + dbMetaData.getDriverName());
+  // System.out.println("JDBC Driver version " + dbMetaData.getDriverVersion());
+  // System.out.println("Driver Major version "
+  // + dbMetaData.getDriverMajorVersion());
+  // System.out.println("Driver Minor version "
+  // + dbMetaData.getDriverMinorVersion());
+  // // Close the connection
+  // // connection.close();
+  // }
 
   public String getUsername() {
     return dataSource.getUser();

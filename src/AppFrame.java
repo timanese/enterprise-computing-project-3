@@ -44,8 +44,6 @@ public class AppFrame extends JFrame implements ActionListener {
   // Result sectin and all its components
   JPanel resultPanel = new JPanel();
   // JTextArea resultTextArea = new JTextArea(23, 56);
-  JTable resultTable = new JTable();
-  JScrollPane sp = new JScrollPane();
   JButton clearResultBtn = new JButton("Clear Result Window");
 
   // Create drivers that will handle all the connection for root and client
@@ -61,6 +59,12 @@ public class AppFrame extends JFrame implements ActionListener {
   boolean connectionStatus = false;
 
   AppFrame() throws SQLException {
+    try {
+      tableModel = new ResultSetModel(true, "SELECT * FROM bikes");
+    } catch (ClassNotFoundException e1) {
+      // TODO Auto-generated catch block
+      e1.printStackTrace();
+    }
 
     // setting connection section content
     connectionTitle.setOpaque(true);
@@ -110,7 +114,13 @@ public class AppFrame extends JFrame implements ActionListener {
           } else {
             try {
               System.out.println("Connecting to the root database");
-              rootConnection.setConnection();
+              try {
+                tableModel = new ResultSetModel(true, "SELECT * FROM bikes");
+                tableModel.fireTableDataChanged();
+              } catch (ClassNotFoundException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+              }
 
               // store the connection for a reference used later
               overallConnection = rootConnection.getConnection();
@@ -131,7 +141,8 @@ public class AppFrame extends JFrame implements ActionListener {
         } else if (connectionType.getSelectedItem().equals(propertiesFile[1])) {
 
           if (!usernameField.getText().equals(clientConnection.getUsername())
-              || !Arrays.equals(passwordField.getPassword(), clientConnection.getPassword().toCharArray())) {
+              || !Arrays.equals(passwordField.getPassword(),
+                  clientConnection.getPassword().toCharArray())) {
             // clear out username and passsword field
             usernameField.setText("");
             passwordField.setText("");
@@ -144,7 +155,12 @@ public class AppFrame extends JFrame implements ActionListener {
           } else {
             try {
               System.out.println("Connected to the client database");
-              clientConnection.setConnection();
+              try {
+                tableModel = new ResultSetModel(false, "SELECT * FROM bikes");
+              } catch (ClassNotFoundException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+              }
               overallConnection = clientConnection.getConnection();
               // Set text of status bar text field to show user the database the connection is
               // connected too
@@ -159,24 +175,8 @@ public class AppFrame extends JFrame implements ActionListener {
             }
           }
         }
-        try {
-          tableModel = new ResultSetModel(overallConnection);
-          resultTable.setModel(tableModel);
-          sp.setViewportView(resultTable);
-        } catch (SQLException e1) {
-          // TODO Auto-generated catch block
-          e1.printStackTrace();
-        }
       }
     });
-    // try {
-    // tableModel = new ResultSetModel(overallConnection);
-    // resultTable.setModel(tableModel);
-    // sp.setViewportView(resultTable);
-    // } catch (SQLException e1) {
-    // // TODO Auto-generated catch block
-    // e1.printStackTrace();
-    // }
 
     // setting SQL command section content
     commandTitle.setOpaque(true);
@@ -190,13 +190,13 @@ public class AppFrame extends JFrame implements ActionListener {
       public void actionPerformed(ActionEvent e) {
 
         System.out.println(commandTextArea.getText());
-        if (!connectionStatus) {
-          // maybe return an exception
-          System.out.println("NO CONNECTION HAS BEEN ESTABLISHED");
-          return;
-        } else {
-          System.out.println("CONNECTION FOUND");
-        }
+        // if (!connectionStatus) {
+        // // maybe return an exception
+        // System.out.println("NO CONNECTION HAS BEEN ESTABLISHED");
+        // return;
+        // } else {
+        // System.out.println("CONNECTION FOUND");
+        // }
         if (!commandTextArea.getText().isBlank()) {
           String query = commandTextArea.getText();
 
@@ -218,7 +218,7 @@ public class AppFrame extends JFrame implements ActionListener {
             }
           } else {
             try {
-              tableModel.setUpdate(query);
+              tableModel.setQuery(query);
             } catch (SQLException e1) {
               // TODO Auto-generated catch block
               // e1.printStackTrace();
@@ -252,6 +252,8 @@ public class AppFrame extends JFrame implements ActionListener {
     // resultTextArea.setLineWrap(true);
     // resultTextArea.setEditable(true);
     // resultTextArea.setWrapStyleWord(true);
+    JTable resultTable = new JTable(tableModel);
+    JScrollPane sp = new JScrollPane(resultTable);
     resultTable.setGridColor(Color.BLACK);
 
     sp.setPreferredSize(new Dimension(650, 375));
