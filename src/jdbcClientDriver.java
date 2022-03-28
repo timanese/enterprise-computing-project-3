@@ -1,3 +1,12 @@
+
+/*
+Name: Tim Yang 
+Course: CNT 4714 Spring 2022
+Assignment Title: Project 3 - Two-Tier Client_Server Application Development with MYSQL and JDBC
+Date: March 27, 2022
+Class: Enterprise Computing 
+*/
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.sql.Connection;

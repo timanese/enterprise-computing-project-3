@@ -1,12 +1,23 @@
-// Tim Yang
+/*
+Name: Tim Yang 
+Course: CNT 4714 Spring 2022
+Assignment Title: Project 3 - Two-Tier Client_Server Application Development with MYSQL and JDBC
+Date: March 27, 2022
+Class: Enterprise Computing 
+*/
 
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Properties;
 
 import javax.swing.table.AbstractTableModel;
+
+import com.mysql.cj.jdbc.MysqlDataSource;
 
 public class ResultSetModel extends AbstractTableModel {
 
@@ -16,11 +27,33 @@ public class ResultSetModel extends AbstractTableModel {
   private int numberOfRows;
   private Connection connection;
 
-  public ResultSetModel(Connection connection_) throws SQLException {
+  // connection for operation log database
+  private Properties propertiesOL = new Properties();
+  private FileInputStream fileinOL = null;
+  private MysqlDataSource dataSourceOL = null;
+  private Connection connectionOL = null;
+  private Statement statementOL;
+
+  public ResultSetModel(Connection connection_, String query) throws SQLException {
     this.connection = connection_;
     // create Statement to query database
     this.statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE,
         ResultSet.CONCUR_READ_ONLY);
+
+    setDefaultQuery(query);
+    // read a properties file
+    try {
+      fileinOL = new FileInputStream("db.properties");
+      propertiesOL.load(fileinOL);
+      dataSourceOL = new MysqlDataSource();
+      dataSourceOL.setURL(
+          "jdbc:mysql://localhost:3306/operationslog?useTimezone=true&serverTimezone=UTC");
+      dataSourceOL.setUser(propertiesOL.getProperty("MYSQL_DB_USERNAME"));
+      dataSourceOL.setPassword(propertiesOL.getProperty("MYSQL_DB_PASSWORD"));
+    } catch (IOException e) {
+      // e.printStackTrace();
+      System.out.println("Failed to Set dataSource with root operation log data properties");
+    }
   }
 
   // get class that represents column type
@@ -91,31 +124,15 @@ public class ResultSetModel extends AbstractTableModel {
     return ""; // if problems, return empty string object
   }
 
-  public void setQuery(String query) throws SQLException {
+  // To set the first query so it isnt empty
+  // when the table model is empty the gui will not show the table ever
+  public void setDefaultQuery(String query) throws SQLException {
     // In appFrame throw exceptions when this function is called to make sure a
     // connection is established
 
     // specify query and execute it
     // resultSet = null;
     resultSet = statement.executeQuery(query);
-
-    // if the executeQuery fails
-    // if (resultSet == null) {
-    // return false;
-    // }
-
-    // // Iterate through the result set and print the returned results
-    // System.out.println("Results of the Query: . . . . . . . . . . . . . . . . . .
-    // . . . . . . . . . . .\n");
-    // while (resultSet.next())
-    // System.out.println(resultSet.getString("ridername") + " \t" +
-    // resultSet.getString("teamname") + " \t" +
-    // resultSet.getString("gender"));
-    // // the following print statement works exactly the same
-    // // System.out.println(resultSet.getString(1) + " \t" +
-    // // resultSet.getString(2) + " \t" + resultSet.getString(3));
-    // System.out.println();
-    // System.out.println();
 
     // obtain meta data for ResultSet
     metaData = resultSet.getMetaData();
@@ -127,8 +144,30 @@ public class ResultSetModel extends AbstractTableModel {
     // notify JTable that model has changed
     fireTableStructureChanged();
 
-    // query was sucessful return true
-    // return true;
+  }
+
+  public void setQuery(String query) throws SQLException {
+    // In appFrame throw exceptions when this function is called to make sure a
+    // connection is established
+
+    // specify query and execute it
+    // resultSet = null;
+    resultSet = statement.executeQuery(query);
+
+    connectionOL = dataSourceOL.getConnection();
+    statementOL = connectionOL.createStatement();
+    int result = statementOL.executeUpdate("update operationscount set num_queries = num_queries + 1");
+    connectionOL.close();
+    // obtain meta data for ResultSet
+    metaData = resultSet.getMetaData();
+
+    // determine number of rows in ResultSet
+    resultSet.last(); // move to last row
+    numberOfRows = resultSet.getRow(); // get row number
+
+    // notify JTable that model has changed
+    fireTableStructureChanged();
+
   }
 
   public void setUpdate(String query) throws SQLException {
@@ -142,8 +181,13 @@ public class ResultSetModel extends AbstractTableModel {
      * resultSet.last(); // move to last row
      * numberOfRows = resultSet.getRow(); // get row number
      */
-    // notify JTable that model has changed
 
+    connectionOL = dataSourceOL.getConnection();
+    statementOL = connectionOL.createStatement();
+    int result = statementOL.executeUpdate("update operationscount set num_updates = num_updates + 1");
+    connectionOL.close();
+
+    // notify JTable that model has changed
     fireTableStructureChanged();
     // return true;
   }

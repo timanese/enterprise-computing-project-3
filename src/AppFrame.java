@@ -1,3 +1,11 @@
+
+/*
+Name: Tim Yang 
+Course: CNT 4714 Spring 2022
+Assignment Title: Project 3 - Two-Tier Client_Server Application Development with MYSQL and JDBC
+Date: March 27, 2022
+Class: Enterprise Computing 
+*/
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -45,6 +53,7 @@ public class AppFrame extends JFrame implements ActionListener {
   JPanel resultPanel = new JPanel();
   // JTextArea resultTextArea = new JTextArea(23, 56);
   JTable resultTable = new JTable();
+  JTable placeHolder = new JTable();
   JScrollPane sp = new JScrollPane();
   JButton clearResultBtn = new JButton("Clear Result Window");
 
@@ -160,23 +169,14 @@ public class AppFrame extends JFrame implements ActionListener {
           }
         }
         try {
-          tableModel = new ResultSetModel(overallConnection);
+          tableModel = new ResultSetModel(overallConnection, "SELECT * from riders");
           resultTable.setModel(tableModel);
-          sp.setViewportView(resultTable);
         } catch (SQLException e1) {
           // TODO Auto-generated catch block
           e1.printStackTrace();
         }
       }
     });
-    // try {
-    // tableModel = new ResultSetModel(overallConnection);
-    // resultTable.setModel(tableModel);
-    // sp.setViewportView(resultTable);
-    // } catch (SQLException e1) {
-    // // TODO Auto-generated catch block
-    // e1.printStackTrace();
-    // }
 
     // setting SQL command section content
     commandTitle.setOpaque(true);
@@ -184,6 +184,12 @@ public class AppFrame extends JFrame implements ActionListener {
     commandTextArea.setLineWrap(true);
     commandPanel.setBackground(Color.green);
     commandPanel.setBounds(350, 0, 350, 250);
+    clearCommandBtn.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        commandTextArea.setText("");
+      }
+    });
     ExecuteCommandBtn.addActionListener(new ActionListener() {
 
       @Override
@@ -205,12 +211,11 @@ public class AppFrame extends JFrame implements ActionListener {
           if (query.toLowerCase().contains("select")) {
             try {
               tableModel.setQuery(query);
-              System.out.print(query);
-              System.out.println("======= PRINTING THE TABEL =======");
-
+              // update viewport of the scrollpanel to show the table from the query
+              sp.setViewportView(resultTable);
             } catch (SQLException e1) {
               // TODO Auto-generated catch block
-              // e1.printStackTrace();
+              e1.printStackTrace();
               System.out.println("Failed to execute given query");
               JOptionPane.showMessageDialog(null,
                   e1.getMessage(), "Database error",
@@ -249,10 +254,13 @@ public class AppFrame extends JFrame implements ActionListener {
     // setting result section content
     resultPanel.setBackground(Color.RED);
     resultPanel.setBounds(0, 290, 350, 250);
-    // resultTextArea.setLineWrap(true);
-    // resultTextArea.setEditable(true);
-    // resultTextArea.setWrapStyleWord(true);
-    resultTable.setGridColor(Color.BLACK);
+    resultTable.setGridColor(Color.CYAN);
+    clearResultBtn.addActionListener(new ActionListener() {
+      @Override
+      public void actionPerformed(ActionEvent e) {
+        sp.setViewportView(placeHolder);
+      }
+    });
 
     sp.setPreferredSize(new Dimension(650, 375));
 
@@ -262,7 +270,7 @@ public class AppFrame extends JFrame implements ActionListener {
     this.getContentPane().setBackground(Color.lightGray);
     GridBagLayout gridBagLayout = new GridBagLayout();
     this.setLayout(gridBagLayout);
-    this.setResizable(true);
+    this.setResizable(false);
     this.setVisible(true);
 
     // adding all connection section's components
